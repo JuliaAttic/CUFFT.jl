@@ -1,7 +1,8 @@
 module CUFFT
+using CUDArt
 
-import Base: fft!, ifft!
-export Plan, compatibility, destroy, plan, stream
+import Base: convert
+export Plan, compatibility, exec!, plan, stream
 # "Public" but not exported: version()
 
 include("libcufft.jl")
@@ -23,12 +24,12 @@ plan_dict = [
     (Complex128,Complex128) => lib.CUFFT_Z2Z
 ]
 
-function plan{F,T}(dims::Dims, from::Type{F}, to::Type{T})
+function plan{F,T}(dims::Dims, ::Type{F}, ::Type{T})
     n = length(dims)
     p = Cint[0]
-    c = plan_dict[(from,to)]
+    c = plan_dict[(F,T)]
     if n == 1
-        lib.cufftPlan1d(p, dims..., c)
+        lib.cufftPlan1d(p, dims..., c, 1)
     elseif n == 2
         lib.cufftPlan2d(p, dims..., c)
     elseif n == 3
@@ -36,7 +37,9 @@ function plan{F,T}(dims::Dims, from::Type{F}, to::Type{T})
     else
         error("Must be 1, 2, or 3-dimensional")
     end
-    Plan{from,to,n}(p[1])
+    pl = Plan{F,T,n}(p[1])
+    cudafinalizer(pl, destroy)
+    pl
 end
 
 direction(forward::Bool) = forward ? lib.CUFFT_FORWARD : lib.CUFFT_INVERSE
