@@ -8,7 +8,7 @@ include("libcufft.jl")
 const lib = LibCUFFT
 
 type Plan{From,To,N}
-    p::Int
+    p::Cint
 end
 convert(::Type{lib.cufftHandle}, p::Plan) = p.p
 

@@ -9,7 +9,7 @@ function checkerror(code::cufftResult)
     if code == CUFFT_SUCCESS
         return nothing
     end
-    throw(cufft_errors[code])
+    throw(cufft_errors[uint8(code)])
 end
 
 cufft_errors = [
