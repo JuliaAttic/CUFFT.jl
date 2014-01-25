@@ -13,45 +13,73 @@ CUDArt.devices(dev->CUDArt.capability(dev)[1] >= 2, nmax=1) do devlist
     # Allocate space for the FFT
     gfft = CUDArt.CudaArray(Complex128, nc)
     # Perform the FFT
-    pl = CUFFT.plan((n,), Float64, Complex128)
+    pl = CUFFT.plan(gfft, g)
     CUFFT.exec!(pl, g, gfft)
     afftg = CUDArt.to_host(gfft)
     afft = rfft(a)
     @test_approx_eq afftg afft
     # Perform the IFFT
-    pli = CUFFT.plan((n,), Complex128, Float64)
+    pli = CUFFT.plan(g, gfft)
     CUFFT.exec!(pli, gfft, g)
     # Move back to host and compare
     a2 = CUDArt.to_host(g)
     @test_approx_eq a a2/n
-    # 2D transform
-    NX, NY = 8, 5
-    A = randn(NX, NY)
+    
+    # 2D transform with CudaArrays
+    A = rand(7,6)
     G = CUDArt.CudaArray(A)
-    GFFT = CUDArt.CudaArray(Complex128, div(NX,2)+1, NY)
-    pl = CUFFT.plan(size(A), Float64, Complex128)
-    CUFFT.compatibility(pl, :all)
-    CUFFT.exec!(pl, G, GFFT)
-    AFFTG = CUDArt.to_host(GFFT)
-    AFFT = rfft(A)  # Note: these two aren't equal! Figure this out. There are combinations of transposes that get closer
-#     @test_approx_eq AFFTG AFFT
-    pli = CUFFT.plan((NX,NY), Complex128, Float64)
-    CUFFT.exec!(pli, GFFT, G)
-    A2 = CUDArt.to_host(G)
-    @test_approx_eq A A2/length(A)
-    # 3D transform using CudaArray
-    NX, NY, NZ = 38, 75, 124
-    A = randn(NX, NY, NZ)
-    G = CUDArt.CudaArray(A)
-    GFFT = CUDArt.CudaArray(Complex128, div(NX,2)+1, NY, NZ)
-    pl = CUFFT.plan((NX,NY,NZ), Float64, Complex128)
+    GFFT = CUDArt.CudaArray(Complex{eltype(A)}, div(size(G,1),2)+1, size(G,2))
+    pl = CUFFT.plan(GFFT, G)
+    CUFFT.compatibility(pl, :native)
     CUFFT.exec!(pl, G, GFFT)
     AFFTG = CUDArt.to_host(GFFT)
     AFFT = rfft(A)
-#     @test_approx_eq AFFTG AFFT
-    pli = CUFFT.plan((NX,NY,NZ), Complex128, Float64)
+    @test_approx_eq AFFTG AFFT
+    pli = CUFFT.plan(G,GFFT)
     CUFFT.exec!(pli, GFFT, G)
     A2 = CUDArt.to_host(G)
     @test_approx_eq A A2/length(A)
-    # CudaPitchedArray
+
+    # 2D transform with CudaPitchedArrays
+    A = rand(8,3)
+    G = CUDArt.CudaPitchedArray(A)
+    GFFT = CUDArt.CudaPitchedArray(Complex{eltype(A)}, div(size(G,1),2)+1, size(G,2))
+    pl = CUFFT.plan(GFFT, G)
+    CUFFT.compatibility(pl, :native)
+    CUFFT.exec!(pl, G, GFFT)
+    AFFTG = CUDArt.to_host(GFFT)
+    AFFT = rfft(A)
+    @test_approx_eq AFFTG AFFT
+    pli = CUFFT.plan(G,GFFT)
+    CUFFT.exec!(pli, GFFT, G)
+    A2 = CUDArt.to_host(G)
+    @test_approx_eq A A2/length(A)
+    
+    # 3D transform using CudaArray
+    NX, NY, NZ = 38, 69, 108
+    A = randn(NX, NY, NZ)
+    G = CUDArt.CudaArray(A)
+    GFFT = CUDArt.CudaArray(Complex{eltype(G)}, div(size(G,1),2)+1, size(G,2), size(G,3))
+    pl = CUFFT.plan(GFFT, G)
+    CUFFT.exec!(pl, G, GFFT)
+    AFFTG = CUDArt.to_host(GFFT)
+    AFFT = rfft(A)
+    @test_approx_eq AFFTG AFFT
+    pli = CUFFT.plan(G, GFFT)
+    CUFFT.exec!(pli, GFFT, G)
+    A2 = CUDArt.to_host(G)
+    @test_approx_eq A A2/length(A)
+
+    # ... and with CudaPitchedArrays
+    G = CUDArt.CudaPitchedArray(A)
+    GFFT = CUDArt.CudaPitchedArray(Complex{eltype(G)}, div(size(G,1),2)+1, size(G,2), size(G,3))
+    pl = CUFFT.plan(GFFT, G)
+    CUFFT.exec!(pl, G, GFFT)
+    AFFTG = CUDArt.to_host(GFFT)
+    AFFT = rfft(A)
+    @test_approx_eq AFFTG AFFT
+    pli = CUFFT.plan(G, GFFT)
+    CUFFT.exec!(pli, GFFT, G)
+    A2 = CUDArt.to_host(G)
+    @test_approx_eq A A2/length(A)
 end
