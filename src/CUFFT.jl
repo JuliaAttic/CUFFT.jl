@@ -24,20 +24,39 @@ plan_dict = [
     (Complex128,Complex128) => lib.CUFFT_Z2Z
 ]
 
-function plan{F,T}(dims::Dims, ::Type{F}, ::Type{T})
-    n = length(dims)
-    p = Cint[0]
-    c = plan_dict[(F,T)]
-    if n == 1
-        lib.cufftPlan1d(p, dims..., c, 1)
-    elseif n == 2
-        lib.cufftPlan2d(p, dims..., c)
-    elseif n == 3
-        lib.cufftPlan3d(p, dims..., c)
-    else
-        error("Must be 1, 2, or 3-dimensional")
+function plan_size(dest, src)
+    nd = ndims(dest)
+    ndims(src) == nd || throw(DimensionMismatch())
+    sz = Array(Cint, nd)
+    for i = 2:nd
+        if size(dest,i) != size(src,i)
+            throw(DimensionMismatch())
+        end
+        sz[i] = size(dest,i)
     end
-    pl = Plan{F,T,n}(p[1])
+    local plantype
+    if eltype(dest) == eltype(src)
+        size(dest,1) == size(src,1) || throw(DimensionMismatch())
+        sz[1] = size(dest,1)
+    else
+        szbig = max(size(dest,1), size(src,1))
+        szsmall = min(size(dest,1), size(src,1))
+        szsmall == div(szbig,2)+1 || throw(DimensionMismatch())
+        sz[1] = szbig
+    end
+    reverse(sz)
+end
+
+function plan(dest::AbstractCudaArray, src::AbstractCudaArray)
+    p = Cint[0]
+    sz = plan_size(dest, src)
+    inembed = reverse(Cint[size(src)...])
+    onembed = reverse(Cint[size(dest)...])
+    inembed[end] = div(CUDArt.pitch(src), sizeof(eltype(src)))
+    onembed[end] = div(CUDArt.pitch(dest), sizeof(eltype(dest)))
+    plantype = plan_dict[(eltype(src),eltype(dest))]
+    lib.cufftPlanMany(p, ndims(dest), sz, inembed, 1, 1, onembed, 1, 1, plantype, 1)
+    pl = Plan{eltype(src),eltype(dest),ndims(dest)}(p[1])
     cudafinalizer(pl, destroy)
     pl
 end

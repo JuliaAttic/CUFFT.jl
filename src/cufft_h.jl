@@ -31,7 +31,7 @@ const CUFFT_Z2D = 0x6c     # Double-Complex to Double
 const CUFFT_Z2Z = 0x69     # Double-Complex to Double-Complex
 
 typealias cufftCompatibility Cint
-const   CUFFT_COMPATIBILITY_NATIVE          = 0x00,
+const   CUFFT_COMPATIBILITY_NATIVE          = 0x00
 const   CUFFT_COMPATIBILITY_FFTW_PADDING    = 0x01
 const   CUFFT_COMPATIBILITY_FFTW_ASYMMETRIC = 0x02
 const   CUFFT_COMPATIBILITY_FFTW_ALL        = 0x03
