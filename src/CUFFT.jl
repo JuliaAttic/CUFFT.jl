@@ -29,7 +29,7 @@ function RCpair{T<:FloatingPoint}(realtype::Type{T}, realsize) # TODO?: add dims
     csize = [realsize...]
     csize[1] = div(realsize[1],2) + 1
     C = CudaPitchedArray(Complex{T}, csize...)
-    R = CudaPitchedArray{T,ndims(C)}(C.ptr, tuple(realsize...))
+    R = CudaPitchedArray{T,ndims(C)}(C.ptr, tuple(realsize...), device())
     R, C
 end
 
@@ -70,8 +70,8 @@ function plan(dest::AbstractCudaArray, src::AbstractCudaArray; compat::Symbol = 
     sz = plan_size(dest, src)
     inembed = reverse(Cint[size(src)...])
     onembed = reverse(Cint[size(dest)...])
-    inembed[end] = div(CUDArt.pitch(src), sizeof(eltype(src)))
-    onembed[end] = div(CUDArt.pitch(dest), sizeof(eltype(dest)))
+    inembed[end] = pitchel(src)
+    onembed[end] = pitchel(dest)
     plantype = plan_dict[(eltype(src),eltype(dest))]
     lib.cufftPlanMany(p, ndims(dest), sz, inembed, 1, 1, onembed, 1, 1, plantype, 1)
     pl = Plan{eltype(src),eltype(dest),ndims(dest)}(p[1])
