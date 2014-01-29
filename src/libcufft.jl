@@ -9,6 +9,8 @@ function checkerror(code::cufftResult)
     if code == CUFFT_SUCCESS
         return nothing
     end
+    println("An error was triggered:")
+    Base.show_backtrace(STDOUT, backtrace())
     throw(cufft_errors[uint8(code)])
 end
 

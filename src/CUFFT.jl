@@ -2,7 +2,8 @@ module CUFFT
 using CUDArt
 
 import Base: convert
-export Plan, compatibility, plan, stream, RCpair
+import CUDArt: destroy
+export Plan, compatibility, plan, stream, RCpair, RCfree
 # "Public" but not exported: version()
 
 include("libcufft.jl")
@@ -13,7 +14,11 @@ type Plan{From,To,N}
 end
 convert(::Type{lib.cufftHandle}, p::Plan) = p.p
 
-destroy(p::Plan) = lib.cufftDestroy(p)
+function destroy(p::Plan)
+#     println("Destroying ", p)
+#     Base.show_backtrace(STDOUT, backtrace())
+    lib.cufftDestroy(p)
+end
 
 plan_dict = [
     (Float32,Complex64) => lib.CUFFT_R2C,
@@ -29,7 +34,7 @@ function RCpair{T<:FloatingPoint}(realtype::Type{T}, realsize) # TODO?: add dims
     csize = [realsize...]
     csize[1] = div(realsize[1],2) + 1
     C = CudaPitchedArray(Complex{T}, csize...)
-    R = CudaPitchedArray{T,ndims(C)}(C.ptr, tuple(realsize...), device())
+    R = reinterpret(T, C, tuple(realsize...))
     R, C
 end
 
@@ -38,6 +43,8 @@ function RCpair{T<:FloatingPoint}(A::Array{T}) # TODO?: add dims
     copy!(R, A)
     R, C
 end
+
+RCfree{T<:FloatingPoint}(R::CudaPitchedArray{T}, C::CudaPitchedArray{Complex{T}}) = free(C)
 
 function plan_size(dest, src)
     nd = ndims(dest)
@@ -76,7 +83,7 @@ function plan(dest::AbstractCudaArray, src::AbstractCudaArray; compat::Symbol = 
     lib.cufftPlanMany(p, ndims(dest), sz, inembed, 1, 1, onembed, 1, 1, plantype, 1)
     pl = Plan{eltype(src),eltype(dest),ndims(dest)}(p[1])
     compatibility(pl, compat)
-    cudafinalizer(pl, destroy)
+#     cudafinalizer(pl, destroy)
     (dest,src,forward) -> exec!(pl, src, dest, forward)
 end
 
