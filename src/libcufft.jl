@@ -1,6 +1,7 @@
 module LibCUFFT
 
 include("cufft_h.jl")
+import CUDArt.rt.cudaStream_t
 
 const libcufft = find_library(["libcufft", "cufft"], ["/usr/local/cuda"])
 isempty(libcufft) && error("Cannot load libcufft")

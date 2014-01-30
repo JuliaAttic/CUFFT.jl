@@ -3,7 +3,7 @@ using CUDArt
 
 import Base: convert
 import CUDArt: destroy
-export Plan, compatibility, plan, stream, RCpair, RCfree
+export Plan, compatibility, plan, tie, RCpair, RCfree
 # "Public" but not exported: version()
 
 include("libcufft.jl")
@@ -72,7 +72,7 @@ end
 # Returns a function dofft!(dest, src, forward).
 # Unlike FFTW's plan, this does not destroy the inputs
 # TODO?: add dims
-function plan(dest::AbstractCudaArray, src::AbstractCudaArray; compat::Symbol = :native)
+function plan(dest::AbstractCudaArray, src::AbstractCudaArray; compat::Symbol = :native, stream=null_stream)
     p = Cint[0]
     sz = plan_size(dest, src)
     inembed = reverse(Cint[size(src)...])
@@ -83,7 +83,7 @@ function plan(dest::AbstractCudaArray, src::AbstractCudaArray; compat::Symbol = 
     lib.cufftPlanMany(p, ndims(dest), sz, inembed, 1, 1, onembed, 1, 1, plantype, 1)
     pl = Plan{eltype(src),eltype(dest),ndims(dest)}(p[1])
     compatibility(pl, compat)
-#     cudafinalizer(pl, destroy)
+    tie(pl, stream)
     (dest,src,forward) -> exec!(pl, src, dest, forward)
 end
 
@@ -113,6 +113,6 @@ modedict = [
 
 compatibility(p::Plan, mode::Symbol) = lib.cufftSetCompatibilityMode(p, modedict[mode])
 
-# TODO: stream
+tie(p::Plan, s::Stream) = lib.cufftSetStream(p, s)
 
 end
