@@ -1,6 +1,8 @@
 # CUFFT
 
-# Notes on memory
+This is a wrapper of the CUFFT library. It works in conjunction with the [CUDArt](https://github.com/JuliaGPU/CUDArt.jl) package.
+
+#### Notes on memory
 
 For those who dive into the internals, one potentially-confusing point is that C's (or FFTW's) convention for representing array dimensions is opposite that of Julia. C's convention stems from the static representation of arrays,
 
