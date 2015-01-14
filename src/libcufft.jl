@@ -1,4 +1,5 @@
 module LibCUFFT
+using Compat
 
 include("cufft_h.jl")
 import CUDArt.rt.cudaStream_t
@@ -15,7 +16,7 @@ function checkerror(code::cufftResult)
     throw(cufft_errors[uint8(code)])
 end
 
-cufft_errors = [
+cufft_errors = @compat Dict(
     CUFFT_INVALID_PLAN   => "Invalid plan",
     CUFFT_ALLOC_FAILED   => "Allocation failed",
     CUFFT_INVALID_TYPE   => "Invalid type",
@@ -25,7 +26,7 @@ cufft_errors = [
     CUFFT_SETUP_FAILED   => "Setup failed",
     CUFFT_INVALID_SIZE   => "Invalid size",
     CUFFT_UNALIGNED_DATA => "Unaligned data"
-]    
+)
 
 function cufftPlan1d(plan, nx, _type, batch)
   checkerror(ccall( (:cufftPlan1d, libcufft), cufftResult, (Ptr{cufftHandle}, Cint, cufftType, Cint), plan, nx, _type, batch))

@@ -1,5 +1,6 @@
 module CUFFT
 using CUDArt
+using Compat
 
 import Base: convert
 import CUDArt: destroy
@@ -20,14 +21,14 @@ function destroy(p::Plan)
     lib.cufftDestroy(p)
 end
 
-plan_dict = [
+plan_dict = @compat Dict(
     (Float32,Complex64) => lib.CUFFT_R2C,
     (Complex64,Float32) => lib.CUFFT_C2R,
     (Complex64,Complex64) => lib.CUFFT_C2C,
     (Float64,Complex128) => lib.CUFFT_D2Z,
     (Complex128,Float64) => lib.CUFFT_Z2D,
     (Complex128,Complex128) => lib.CUFFT_Z2Z
-]
+)
 
 # For in-place R2C and C2R transforms
 function RCpair{T<:FloatingPoint}(realtype::Type{T}, realsize) # TODO?: add dims
@@ -104,12 +105,12 @@ exec!(p::Plan{Complex128,Float64}, input, output, forward::Bool = true) =
     
 version() = (ret = Cint[0]; lib.cufftGetVersion(ret); ret[1])
 
-modedict = [
+modedict = @compat Dict(
     :native     => lib.CUFFT_COMPATIBILITY_NATIVE,
     :padding    => lib.CUFFT_COMPATIBILITY_FFTW_PADDING,
     :asymmetric => lib.CUFFT_COMPATIBILITY_FFTW_ASYMMETRIC,
     :all        => lib.CUFFT_COMPATIBILITY_FFTW_ALL
-]
+)
 
 compatibility(p::Plan, mode::Symbol) = lib.cufftSetCompatibilityMode(p, modedict[mode])
 
