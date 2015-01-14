@@ -2,6 +2,35 @@
 
 This is a wrapper of the CUFFT library. It works in conjunction with the [CUDArt](https://github.com/JuliaGPU/CUDArt.jl) package.
 
+## Usage example
+
+Here's an example of taking a 2D real transform, and then it's inverse, and comparing against Julia's CPU-based 
+
+```julia
+using CUDArt, CUFFT, Base.Test
+
+CUDArt.devices(dev->capability(dev)[1] >= 2, nmax=1) do devlist
+    A = rand(7,6)
+    # Move data to GPU
+    G = CudaArray(A)
+    # Allocate space for the output (transformed array)
+    GFFT = CudaArray(Complex{eltype(A)}, div(size(G,1),2)+1, size(G,2))
+    # Compute the FFT
+    pl! = plan(GFFT, G)
+    pl!(GFFT, G, true)
+    # Copy the result to main memory
+    AFFTG = to_host(GFFT)
+    # Compare against Julia's rfft
+    AFFT = rfft(A)
+    @test_approx_eq AFFTG AFFT
+    # Now compute the inverse transform
+    pli! = plan(G,GFFT)
+    pli!(G, GFFT, false)
+    A2 = to_host(G)
+    @test_approx_eq A A2/length(A)
+end
+```
+
 #### Notes on memory
 
 For those who dive into the internals, one potentially-confusing point is that C's (or FFTW's) convention for representing array dimensions is opposite that of Julia. C's convention stems from the static representation of arrays,
