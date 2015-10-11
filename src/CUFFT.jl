@@ -31,7 +31,7 @@ plan_dict = @compat Dict(
 )
 
 # For in-place R2C and C2R transforms
-function RCpair{T<:FloatingPoint}(realtype::Type{T}, realsize) # TODO?: add dims
+function RCpair{T<:AbstractFloat}(realtype::Type{T}, realsize) # TODO?: add dims
     csize = [realsize...]
     csize[1] = div(realsize[1],2) + 1
     C = CudaPitchedArray(Complex{T}, csize...)
@@ -39,13 +39,13 @@ function RCpair{T<:FloatingPoint}(realtype::Type{T}, realsize) # TODO?: add dims
     R, C
 end
 
-function RCpair{T<:FloatingPoint}(A::Array{T}) # TODO?: add dims
+function RCpair{T<:AbstractFloat}(A::Array{T}) # TODO?: add dims
     R, C = RCpair(eltype(A), size(A))
     copy!(R, A)
     R, C
 end
 
-RCfree{T<:FloatingPoint}(R::CudaPitchedArray{T}, C::CudaPitchedArray{Complex{T}}) = free(C)
+RCfree{T<:AbstractFloat}(R::CudaPitchedArray{T}, C::CudaPitchedArray{Complex{T}}) = free(C)
 
 function plan_size(dest, src)
     nd = ndims(dest)
@@ -102,7 +102,7 @@ exec!(p::Plan{Float64,Complex128}, input, output, forward::Bool = true) =
     lib.cufftExecD2Z(p, input, output)
 exec!(p::Plan{Complex128,Float64}, input, output, forward::Bool = true) =
     lib.cufftExecZ2D(p, input, output)
-    
+
 version() = (ret = Cint[0]; lib.cufftGetVersion(ret); ret[1])
 
 modedict = @compat Dict(
