@@ -1,10 +1,22 @@
 module LibCUFFT
 using Compat
 
+import Base.Sys: WORD_SIZE
+
 include("cufft_h.jl")
 import CUDArt.rt.cudaStream_t
 
-const libcufft = Libdl.find_library(["libcufft", "cufft"], ["/usr/local/cuda"])
+@windows? (
+begin
+    const libcufft = Libdl.find_library([string("cufft", WORD_SIZE, "_75"),
+      string("cufft", WORD_SIZE, "_70"), string("cufft", WORD_SIZE, "_65")],
+      [joinpath(ENV["CUDA_PATH"], "bin")])
+end
+: # linux or mac
+begin
+    const libcufft = Libdl.find_library(["libcufft", "cufft"], ["/usr/lib", "/usr/local/cuda"])
+end)
+
 isempty(libcufft) && error("Cannot load libcufft")
 
 function checkerror(code::cufftResult)
