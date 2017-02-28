@@ -1,28 +1,36 @@
-# CUFFT API function return values 
-typealias cufftResult Cint
-const CUFFT_SUCCESS        = 0x0
-const CUFFT_INVALID_PLAN   = 0x1
-const CUFFT_ALLOC_FAILED   = 0x2
-const CUFFT_INVALID_TYPE   = 0x3
-const CUFFT_INVALID_VALUE  = 0x4
-const CUFFT_INTERNAL_ERROR = 0x5
-const CUFFT_EXEC_FAILED    = 0x6
-const CUFFT_SETUP_FAILED   = 0x7
-const CUFFT_INVALID_SIZE   = 0x8
-const CUFFT_UNALIGNED_DATA = 0x9
-    
-typealias cufftReal Float32
-typealias cufftDoubleReal Float64
+# CUFFT API function return values
+@enum(cufftResult,
+    CUFFT_SUCCESS        = 0,  #  The cuFFT operation was successful
+    CUFFT_INVALID_PLAN   = 1,  #  cuFFT was passed an invalid plan handle
+    CUFFT_ALLOC_FAILED   = 2,  #  cuFFT failed to allocate GPU or CPU memory
+    CUFFT_INVALID_TYPE   = 3,  #  No longer used
+    CUFFT_INVALID_VALUE  = 4,  #  User specified an invalid pointer or parameter
+    CUFFT_INTERNAL_ERROR = 5,  #  Driver or internal cuFFT library error
+    CUFFT_EXEC_FAILED    = 6,  #  Failed to execute an FFT on the GPU
+    CUFFT_SETUP_FAILED   = 7,  #  The cuFFT library failed to initialize
+    CUFFT_INVALID_SIZE   = 8,  #  User specified an invalid transform size
+    CUFFT_UNALIGNED_DATA = 9,  #  No longer used
+    CUFFT_INCOMPLETE_PARAMETER_LIST = 10, #  Missing parameters in call
+    CUFFT_INVALID_DEVICE = 11, #  Execution of a plan was on different GPU than plan creation
+    CUFFT_PARSE_ERROR    = 12, #  Internal plan database error
+    CUFFT_NO_WORKSPACE   = 13,  #  No workspace has been provided prior to plan execution
+    CUFFT_NOT_IMPLEMENTED = 14, # Function does not implement functionality for parameters given.
+    CUFFT_LICENSE_ERROR  = 15, # Used in previous versions.
+    CUFFT_NOT_SUPPORTED  = 16  # Operation is not supported for parameters given.
+)
 
-typealias cufftComplex Complex64
-typealias cufftDoubleComplex Complex128
+const cufftReal = Float32
+const cufftDoubleReal = Float64
 
-# CUFFT transform directions 
+const cufftComplex = Complex64
+const cufftDoubleComplex = Complex128
+
+# CUFFT transform directions
 const CUFFT_FORWARD = -1 # Forward FFT
 const CUFFT_INVERSE =  1 # Inverse FFT
 
-# CUFFT supports the following transform types 
-typealias cufftType Cint
+# CUFFT supports the following transform types
+const cufftType = Cint
 const CUFFT_R2C = 0x2a     # Real to Complex
 const CUFFT_C2R = 0x2c     # Complex to Real
 const CUFFT_C2C = 0x29     # Complex to Complex
@@ -30,10 +38,10 @@ const CUFFT_D2Z = 0x6a     # Double to Double-Complex
 const CUFFT_Z2D = 0x6c     # Double-Complex to Double
 const CUFFT_Z2Z = 0x69     # Double-Complex to Double-Complex
 
-typealias cufftCompatibility Cint
+const cufftCompatibility = Cint
 const   CUFFT_COMPATIBILITY_NATIVE          = 0x00
 const   CUFFT_COMPATIBILITY_FFTW_PADDING    = 0x01
 const   CUFFT_COMPATIBILITY_FFTW_ASYMMETRIC = 0x02
 const   CUFFT_COMPATIBILITY_FFTW_ALL        = 0x03
 
-typealias cufftHandle Cint
+const cufftHandle = Cint

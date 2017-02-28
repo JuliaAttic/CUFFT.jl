@@ -6,16 +6,13 @@ import Base.Sys: WORD_SIZE
 include("cufft_h.jl")
 import CUDArt.rt.cudaStream_t
 
-@windows? (
-begin
+if is_windows()
     const libcufft = Libdl.find_library([string("cufft", WORD_SIZE, "_75"),
       string("cufft", WORD_SIZE, "_70"), string("cufft", WORD_SIZE, "_65")],
       [joinpath(ENV["CUDA_PATH"], "bin")])
-end
-: # linux or mac
-begin
+else
     const libcufft = Libdl.find_library(["libcufft", "cufft"], ["/usr/lib", "/usr/local/cuda"])
-end)
+end
 
 isempty(libcufft) && error("Cannot load libcufft")
 
@@ -25,20 +22,9 @@ function checkerror(code::cufftResult)
     end
     println("An error was triggered:")
     Base.show_backtrace(STDOUT, backtrace())
-    throw(cufft_errors[uint8(code)])
+    throw(string(Symbol(code)))
 end
 
-cufft_errors = @compat Dict(
-    CUFFT_INVALID_PLAN   => "Invalid plan",
-    CUFFT_ALLOC_FAILED   => "Allocation failed",
-    CUFFT_INVALID_TYPE   => "Invalid type",
-    CUFFT_INVALID_VALUE  => "Invalid value",
-    CUFFT_INTERNAL_ERROR => "Internal error",
-    CUFFT_EXEC_FAILED    => "Execution failed",
-    CUFFT_SETUP_FAILED   => "Setup failed",
-    CUFFT_INVALID_SIZE   => "Invalid size",
-    CUFFT_UNALIGNED_DATA => "Unaligned data"
-)
 
 function cufftPlan1d(plan, nx, _type, batch)
   checkerror(ccall( (:cufftPlan1d, libcufft), cufftResult, (Ptr{cufftHandle}, Cint, cufftType, Cint), plan, nx, _type, batch))
