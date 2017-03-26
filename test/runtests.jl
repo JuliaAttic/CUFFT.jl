@@ -17,14 +17,14 @@ CUDArt.devices(dev->CUDArt.capability(dev)[1] >= 2, nmax=1) do devlist
     pl!(gfft, g, true)
     afftg = CUDArt.to_host(gfft)
     afft = rfft(a)
-    @test_approx_eq afftg afft
+    @test afftg ≈ afft
     # Perform the IFFT
     pli! = CUFFT.plan(g, gfft)
     pli!(g, gfft, false)
     # Move back to host and compare
     a2 = CUDArt.to_host(g)
-    @test_approx_eq a a2/n
-    
+    @test a ≈ a2/n
+
     # 2D transform with CudaArrays
     A = rand(7,6)
     G = CUDArt.CudaArray(A)
@@ -33,11 +33,11 @@ CUDArt.devices(dev->CUDArt.capability(dev)[1] >= 2, nmax=1) do devlist
     pl!(GFFT, G, true)
     AFFTG = CUDArt.to_host(GFFT)
     AFFT = rfft(A)
-    @test_approx_eq AFFTG AFFT
+    @test AFFTG ≈ AFFT
     pli! = CUFFT.plan(G,GFFT)
     pli!(G, GFFT, false)
     A2 = CUDArt.to_host(G)
-    @test_approx_eq A A2/length(A)
+    @test A ≈ A2/length(A)
 
     # 2D transform with CudaPitchedArrays
     A = rand(8,3)
@@ -47,11 +47,11 @@ CUDArt.devices(dev->CUDArt.capability(dev)[1] >= 2, nmax=1) do devlist
     pl!(GFFT, G, true)
     AFFTG = CUDArt.to_host(GFFT)
     AFFT = rfft(A)
-    @test_approx_eq AFFTG AFFT
+    @test AFFTG ≈ AFFT
     pli! = CUFFT.plan(G,GFFT)
     pli!(G, GFFT, false)
     A2 = CUDArt.to_host(G)
-    @test_approx_eq A A2/length(A)
+    @test A ≈ A2/length(A)
 
     # 2D in-place transform
     A = rand(8,3)
@@ -60,12 +60,12 @@ CUDArt.devices(dev->CUDArt.capability(dev)[1] >= 2, nmax=1) do devlist
     pl!(GFFT, G, true)
     AFFTG = CUDArt.to_host(GFFT)
     AFFT = rfft(A)
-    @test_approx_eq AFFTG AFFT
+    @test AFFTG ≈ AFFT
     pli! = CUFFT.plan(G,GFFT)
     pli!(G, GFFT, false)
     A2 = CUDArt.to_host(G)
-    @test_approx_eq A A2/length(A)
-    
+    @test A ≈ A2/length(A)
+
     # 3D transform using CudaArray
     NX, NY, NZ = 38, 69, 108
     A = randn(NX, NY, NZ)
@@ -75,11 +75,11 @@ CUDArt.devices(dev->CUDArt.capability(dev)[1] >= 2, nmax=1) do devlist
     pl!(GFFT, G, true)
     AFFTG = CUDArt.to_host(GFFT)
     AFFT = rfft(A)
-    @test_approx_eq AFFTG AFFT
+    @test AFFTG ≈ AFFT
     pli! = CUFFT.plan(G, GFFT)
     pli!(G, GFFT, false)
     A2 = CUDArt.to_host(G)
-    @test_approx_eq A A2/length(A)
+    @test A ≈ A2/length(A)
 
     # ... and with CudaPitchedArrays
     G = CUDArt.CudaPitchedArray(A)
@@ -88,9 +88,9 @@ CUDArt.devices(dev->CUDArt.capability(dev)[1] >= 2, nmax=1) do devlist
     pl!(GFFT, G, true)
     AFFTG = CUDArt.to_host(GFFT)
     AFFT = rfft(A)
-    @test_approx_eq AFFTG AFFT
+    @test AFFTG ≈ AFFT
     pli! = CUFFT.plan(G, GFFT)
     pli!(G, GFFT, false)
     A2 = CUDArt.to_host(G)
-    @test_approx_eq A A2/length(A)
+    @test A ≈ A2/length(A)
 end

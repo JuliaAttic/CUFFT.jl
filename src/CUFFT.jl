@@ -50,12 +50,12 @@ RCfree{T<:AbstractFloat}(R::CudaPitchedArray{T}, C::CudaPitchedArray{Complex{T}}
 function plan_size(dest, src)
     nd = ndims(dest)
     ndims(src) == nd || throw(DimensionMismatch())
-    sz = Array(Cint, nd)
+    sz = Vector{Cint}(nd)
     for i = 2:nd
         if size(dest,i) != size(src,i)
             throw(DimensionMismatch())
         end
-        sz[i] = size(dest,i)
+        sz[i] = size(dest, i)
     end
     local plantype
     if eltype(dest) == eltype(src)
@@ -83,7 +83,7 @@ function plan(dest::AbstractCudaArray, src::AbstractCudaArray; compat::Symbol = 
     plantype = plan_dict[(eltype(src),eltype(dest))]
     lib.cufftPlanMany(p, ndims(dest), sz, inembed, 1, 1, onembed, 1, 1, plantype, 1)
     pl = Plan{eltype(src),eltype(dest),ndims(dest)}(p[1])
-    compatibility(pl, compat)
+    #compatibility(pl, compat)
     tie(pl, stream)
     (dest,src,forward) -> exec!(pl, src, dest, forward)
 end
@@ -105,7 +105,7 @@ exec!(p::Plan{Complex128,Float64}, input, output, forward::Bool = true) =
 
 version() = (ret = Cint[0]; lib.cufftGetVersion(ret); ret[1])
 
-modedict = @compat Dict(
+modedict = Dict(
     :native     => lib.CUFFT_COMPATIBILITY_NATIVE,
     :padding    => lib.CUFFT_COMPATIBILITY_FFTW_PADDING,
     :asymmetric => lib.CUFFT_COMPATIBILITY_FFTW_ASYMMETRIC,
