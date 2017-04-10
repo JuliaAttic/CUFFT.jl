@@ -73,7 +73,7 @@ end
 # Returns a function dofft!(dest, src, forward).
 # Unlike FFTW's plan, this does not destroy the inputs
 # TODO?: add dims
-function plan(dest::AbstractCudaArray, src::AbstractCudaArray; compat::Symbol = :native, stream=null_stream)
+function plan(dest::AbstractCudaArray, src::AbstractCudaArray; compat::Symbol = :padding, stream=null_stream)
     p = Cint[0]
     sz = plan_size(dest, src)
     inembed = reverse(Cint[size(src)...])
