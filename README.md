@@ -1,5 +1,9 @@
 # CUFFT
 
+**Build status**: [![](https://ci.maleadt.net/buildbot/julia/badge.svg?builder=CUFFT.jl:%20Julia%200.5%20(x86-64)&badge=Julia%20v0.5)](https://ci.maleadt.net/buildbot/julia/builders/CUFFT.jl%3A%20Julia%200.5%20%28x86-64%29) [![](https://ci.maleadt.net/buildbot/julia/badge.svg?builder=CUFFT.jl:%20Julia%200.6%20(x86-64)&badge=Julia%200.6)](https://ci.maleadt.net/buildbot/julia/builders/CUFFT.jl%3A%20Julia%200.6%20%28x86-64%29)
+
+**Code coverage**: [![Coverage Status](https://codecov.io/gh/JuliaGPU/CUFFT.jl/coverage.svg)](https://codecov.io/gh/JuliaGPU/CUFFT.jl)
+
 This is a wrapper of the CUFFT library. It works in conjunction with the [CUDArt](https://github.com/JuliaGPU/CUDArt.jl) package.
 
 ## Usage example
