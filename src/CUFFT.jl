@@ -21,7 +21,7 @@ function destroy(p::Plan)
     lib.cufftDestroy(p)
 end
 
-plan_dict = @compat Dict(
+plan_dict = Dict(
     (Float32,Complex64) => lib.CUFFT_R2C,
     (Complex64,Float32) => lib.CUFFT_C2R,
     (Complex64,Complex64) => lib.CUFFT_C2C,
