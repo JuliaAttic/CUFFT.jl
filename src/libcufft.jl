@@ -4,7 +4,7 @@ using Compat
 import Base.Sys: WORD_SIZE
 
 include("cufft_h.jl")
-import CUDArt.rt.cudaStream_t
+import CUDAdrv.CuStream_t
 
 if is_windows()
     const libcufft = Libdl.find_library([string("cufft", WORD_SIZE, "_75"),
@@ -60,7 +60,7 @@ function cufftExecZ2D(plan, idata, odata)
   checkerror(ccall( (:cufftExecZ2D, libcufft), cufftResult, (cufftHandle, Ptr{cufftDoubleComplex}, Ptr{cufftDoubleReal}), plan, idata, odata))
 end
 function cufftSetStream(plan, stream)
-  checkerror(ccall( (:cufftSetStream, libcufft), cufftResult, (cufftHandle, cudaStream_t), plan, stream))
+    checkerror(ccall( (:cufftSetStream, libcufft), cufftResult, (cufftHandle, cuSteam_t), plan, stream))
 end
 function cufftSetCompatibilityMode(plan, mode)
   checkerror(ccall( (:cufftSetCompatibilityMode, libcufft), cufftResult, (cufftHandle, cufftCompatibility), plan, mode))
