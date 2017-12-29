@@ -1,10 +1,11 @@
 module CUFFT
-using CUDArt
-using Compat
+#using CUDArt
+#using Compat
+using CUDAdrv
 
 import Base: convert
-import CUDArt: destroy
-export Plan, compatibility, plan, tie, RCpair, RCfree
+# import CUDArt: destroy
+export Plan, compatibility, plan
 # "Public" but not exported: version()
 
 include("libcufft.jl")
@@ -16,12 +17,12 @@ end
 convert(::Type{lib.cufftHandle}, p::Plan) = p.p
 
 function destroy(p::Plan)
-#     println("Destroying ", p)
+     println("Destroying ", p)
 #     Base.show_backtrace(STDOUT, backtrace())
     lib.cufftDestroy(p)
 end
 
-plan_dict = @compat Dict(
+plan_dict = Dict(
     (Float32,Complex64) => lib.CUFFT_R2C,
     (Complex64,Float32) => lib.CUFFT_C2R,
     (Complex64,Complex64) => lib.CUFFT_C2C,
@@ -30,22 +31,22 @@ plan_dict = @compat Dict(
     (Complex128,Complex128) => lib.CUFFT_Z2Z
 )
 
-# For in-place R2C and C2R transforms
-function RCpair{T<:AbstractFloat}(realtype::Type{T}, realsize) # TODO?: add dims
-    csize = [realsize...]
-    csize[1] = div(realsize[1],2) + 1
-    C = CudaPitchedArray(Complex{T}, csize...)
-    R = reinterpret(T, C, tuple(realsize...))
-    R, C
-end
+# # For in-place R2C and C2R transforms
+# function RCpair{T<:AbstractFloat}(realtype::Type{T}, realsize) # TODO?: add dims
+#     csize = [realsize...]
+#     csize[1] = div(realsize[1],2) + 1
+#     C = CudaPitchedArray(Complex{T}, csize...)
+#     R = reinterpret(T, C, tuple(realsize...))
+#     R, C
+# end
 
-function RCpair{T<:AbstractFloat}(A::Array{T}) # TODO?: add dims
-    R, C = RCpair(eltype(A), size(A))
-    copy!(R, A)
-    R, C
-end
+# function RCpair{T<:AbstractFloat}(A::Array{T}) # TODO?: add dims
+#     R, C = RCpair(eltype(A), size(A))
+#     copy!(R, A)
+#     R, C
+# end
 
-RCfree{T<:AbstractFloat}(R::CudaPitchedArray{T}, C::CudaPitchedArray{Complex{T}}) = free(C)
+# RCfree{T<:AbstractFloat}(R::CudaPitchedArray{T}, C::CudaPitchedArray{Complex{T}}) = free(C)
 
 function plan_size(dest, src)
     nd = ndims(dest)
@@ -73,7 +74,7 @@ end
 # Returns a function dofft!(dest, src, forward).
 # Unlike FFTW's plan, this does not destroy the inputs
 # TODO?: add dims
-function plan(dest::AbstractCudaArray, src::AbstractCudaArray; compat::Symbol = :padding, stream=null_stream)
+function plan(dest::CuArray, src::CuArray; compat::Symbol = :padding, stream=CuDefaultStream())
     p = Cint[0]
     sz = plan_size(dest, src)
     inembed = reverse(Cint[size(src)...])
@@ -83,7 +84,7 @@ function plan(dest::AbstractCudaArray, src::AbstractCudaArray; compat::Symbol = 
     plantype = plan_dict[(eltype(src),eltype(dest))]
     lib.cufftPlanMany(p, ndims(dest), sz, inembed, 1, 1, onembed, 1, 1, plantype, 1)
     pl = Plan{eltype(src),eltype(dest),ndims(dest)}(p[1])
-    #compatibility(pl, compat)
+    compatibility(pl, compat)
     tie(pl, stream)
     (dest,src,forward) -> exec!(pl, src, dest, forward)
 end
@@ -114,6 +115,6 @@ modedict = Dict(
 
 compatibility(p::Plan, mode::Symbol) = lib.cufftSetCompatibilityMode(p, modedict[mode])
 
-tie(p::Plan, s::Stream) = lib.cufftSetStream(p, s)
+tie(p::Plan, s::CuStream) = lib.cufftSetStream(p, s)
 
 end
