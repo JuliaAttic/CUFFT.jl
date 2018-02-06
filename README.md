@@ -1,3 +1,7 @@
+## This package is deprecated.
+
+The same functionality is available in [CuArrays.jl](https://github.com/JuliaGPU/CuArrays.jl).
+
 # CUFFT
 
 **Build status**: [![][buildbot-julia05-img]][buildbot-julia05-url] [![][buildbot-julia06-img]][buildbot-julia06-url]
