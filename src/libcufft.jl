@@ -11,7 +11,7 @@ if is_windows()
       string("cufft", WORD_SIZE, "_70"), string("cufft", WORD_SIZE, "_65")],
       [joinpath(ENV["CUDA_PATH"], "bin")])
 else
-    const libcufft = Libdl.find_library(["libcufft", "cufft"], ["/usr/lib", "/usr/local/cuda"])
+    const libcufft = Libdl.find_library(["libcufft", "cufft"], ["/usr/lib", "/usr/local/cuda", "/usr/local/cuda/lib64"])
 end
 
 isempty(libcufft) && error("Cannot load libcufft")
