@@ -1,13 +1,15 @@
-language: cpp
-compiler:
-  - clang
+## Documentation: http://docs.travis-ci.com/user/languages/julia/
+language: julia
+os:
+  - linux
+julia:
+  - 0.6
+  - nightly
+matrix:
+ allow_failures:
+ - julia: nightly
+
 notifications:
   email: false
-before_install:
-  - sudo add-apt-repository ppa:staticfloat/julia-deps -y
-  - sudo add-apt-repository ppa:staticfloat/julianightlies -y
-  - sudo apt-get update -qq -y
-  - sudo apt-get install libpcre3-dev julia -y
-script:
-  - julia -e 'Pkg.init(); run(`ln -s $(pwd()) $(Pkg.dir("CUFFT"))`); Pkg.pin("CUFFT"); Pkg.resolve()'
-  - julia -e 'using CUFFT; @assert isdefined(:CUFFT); @assert typeof(CUFFT) === Module'
+git:
+  depth: 99999999
