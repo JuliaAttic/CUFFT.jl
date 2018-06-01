@@ -4,13 +4,6 @@ The same functionality is available in [CuArrays.jl](https://github.com/JuliaGPU
 
 # CUFFT
 
-**Build status**: [![][buildbot-julia05-img]][buildbot-julia05-url] [![][buildbot-julia06-img]][buildbot-julia06-url]
-
-[buildbot-julia05-img]: http://ci.maleadt.net/shields/build.php?builder=CUFFT-julia05-x86-64bit&name=julia%200.5
-[buildbot-julia05-url]: http://ci.maleadt.net/shields/url.php?builder=CUFFT-julia05-x86-64bit
-[buildbot-julia06-img]: http://ci.maleadt.net/shields/build.php?builder=CUFFT-julia06-x86-64bit&name=julia%200.6
-[buildbot-julia06-url]: http://ci.maleadt.net/shields/url.php?builder=CUFFT-julia06-x86-64bit
-
 This is a wrapper of the CUFFT library. It works in conjunction with the [CUDArt](https://github.com/JuliaGPU/CUDArt.jl) package.
 
 ## Usage example
